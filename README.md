@@ -443,5 +443,3 @@ on top of it.
 - Never commit `.env`, `venv/`, `node_modules/`, or `ngrok.exe` — all are already gitignored.
 
 ---
-
-**Repository:** https://github.com/Mohamed-Amine-Slama/TranscriptionApp
