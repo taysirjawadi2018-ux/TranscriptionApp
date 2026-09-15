@@ -1,0 +1,4 @@
+fastapi
+uvicorn
+whisper
+python-multipart

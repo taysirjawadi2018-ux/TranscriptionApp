@@ -1,0 +1,34 @@
+{
+  "name": "transcriptionapp",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "~4.0.1",
+    "expo": "^53.0.5",
+    "expo-clipboard": "^7.1.4",
+    "expo-document-picker": "~13.0.3",
+    "expo-file-system": "^18.1.10",
+    "expo-linear-gradient": "^14.1.4",
+    "expo-print": "^14.1.4",
+    "expo-sharing": "^13.1.5",
+    "expo-status-bar": "~2.0.1",
+    "mime-types": "^3.0.1",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-native": "^0.79.2",
+    "react-native-html-to-pdf": "^0.12.0",
+    "react-native-vector-icons": "^10.2.0",
+    "react-native-web": "~0.19.13"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0"
+  },
+  "private": true
+}
