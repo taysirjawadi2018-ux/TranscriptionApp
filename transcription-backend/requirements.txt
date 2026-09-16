@@ -1,4 +1,6 @@
-fastapi
-uvicorn
-whisper
-python-multipart
+fastapi>=0.100.0
+uvicorn[standard]>=0.23.0
+openai-whisper>=20231117
+python-multipart>=0.0.9
+openai>=1.0.0
+python-dotenv>=1.0.0

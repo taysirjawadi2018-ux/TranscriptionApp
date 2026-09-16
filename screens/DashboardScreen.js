@@ -8,7 +8,7 @@ import * as Clipboard from 'expo-clipboard';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 
-const SERVER_URL = 'https://8736-41-62-86-194.ngrok-free.app';
+const SERVER_URL = (process.env.EXPO_PUBLIC_API_URL || 'https://8736-41-62-86-194.ngrok-free.app').replace(/\/+$/, '');
 
 // Helper function for debugging
 const logRequestError = (endpoint, error, responseStatus, responseText) => {

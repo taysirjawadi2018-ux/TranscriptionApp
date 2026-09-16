@@ -7,25 +7,22 @@ from dotenv import load_dotenv
 import os
 import whisper
 import shutil
-from dotenv import load_dotenv
-load_dotenv()
-# Load environment variables from .env
 load_dotenv()
 
-# Initialize Whisper model
-model = whisper.load_model("medium")
+# Initialize Whisper model (configurable via WHISPER_MODEL env var, default: base)
+WHISPER_MODEL_NAME = os.getenv("WHISPER_MODEL", "base")
+print(f"Loading Whisper model '{WHISPER_MODEL_NAME}'...")
+model = whisper.load_model(WHISPER_MODEL_NAME)
+print(f"Whisper model '{WHISPER_MODEL_NAME}' loaded successfully.")
 
-# Initialize OpenAI client using the secure API key from .env file
+# Initialize OpenAI client using the secure API key from environment variables
 api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
     print("WARNING: OpenAI API key not found in environment variables!")
-    
-client = OpenAI(api_key=api_key)
 
-# Create FastAPI app instance with increased max request size
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
+client = OpenAI(api_key=api_key) if api_key else None
 
-app = FastAPI()
+app = FastAPI(title="Transcription & AI Study Assistant API")
 
 # Enable CORS for frontend communication
 app.add_middleware(
@@ -56,6 +53,19 @@ async def log_requests(request, call_next):
     print(f"Response status: {response.status_code}")
     
     return response
+
+# Root and health check endpoints
+@app.get("/")
+async def root():
+    return {
+        "status": "ok",
+        "message": "Transcription & AI Study Assistant API is running",
+        "model": WHISPER_MODEL_NAME
+    }
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
 
 # Endpoint: /transcribe - transcribes audio file using Whisper
 @app.post("/transcribe")
@@ -92,6 +102,12 @@ async def summarize_text(data: SummaryRequest):
         # Log the request data size
         print(f"Summarize request received, text length: {len(data.text)} chars")
         
+        if not client:
+            return JSONResponse(
+                status_code=500,
+                content={"error": "OPENAI_API_KEY is not configured on the server. Please set it in Railway environment variables."}
+            )
+
         # Validate the request data
         if not data.text:
             print("Error: Empty text field in summarize request")
@@ -154,6 +170,12 @@ async def generate_quiz(data: QuizRequest):
         # Log the request data size
         print(f"Quiz generation request received, text length: {len(data.text)} chars")
         
+        if not client:
+            return JSONResponse(
+                status_code=500,
+                content={"error": "OPENAI_API_KEY is not configured on the server. Please set it in Railway environment variables."}
+            )
+
         # Validate the request data
         if not data.text:
             print("Error: Empty text field in quiz generation request")
@@ -210,3 +232,8 @@ async def generate_quiz(data: QuizRequest):
             status_code=500,
             content={"error": str(e)}
         )
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
