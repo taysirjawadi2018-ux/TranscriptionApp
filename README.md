@@ -392,9 +392,11 @@ The project is architected for dual cloud deployment:
    - Railway will automatically detect `railway.json` and `Dockerfile`.
 5. **Set Environment Variables**:
    - Open the **Variables** tab and add:
-     - `OPENAI_API_KEY`: Your OpenAI API key (`sk-...`).
-     - `WHISPER_MODEL`: `base` (recommended for standard memory limits) or `tiny`, `small`, `medium`.
-     - `PORT`: `8000` (Railway injects this automatically).
+     - `QWEN_API_KEY`: Your Qwen API key (e.g. from Alibaba Cloud DashScope, OpenRouter, Groq, or SiliconFlow).
+     - *(Optional)* `QWEN_MODEL`: `qwen-plus` (default), `qwen-turbo`, `qwen-max`, or `qwen2.5-72b-instruct`.
+     - *(Optional)* `QWEN_BASE_URL`: Defaults to `https://dashscope-intl.aliyuncs.com/compatible-mode/v1` (or your provider's OpenAI-compatible base URL).
+     - *(Optional)* `WHISPER_MODEL`: `base` (default), `tiny`, `small`, or `medium`.
+     - `PORT`: `8000` (Railway sets this automatically).
 6. **Generate a Public Domain**:
    - Under the **Networking** / **Settings** tab, click **Generate Domain** (e.g. `https://your-backend.up.railway.app`).
    - Test it by visiting `https://your-backend.up.railway.app/health` in your browser. You should see `{"status":"healthy"}`.

@@ -15,14 +15,18 @@ print(f"Loading Whisper model '{WHISPER_MODEL_NAME}'...")
 model = whisper.load_model(WHISPER_MODEL_NAME)
 print(f"Whisper model '{WHISPER_MODEL_NAME}' loaded successfully.")
 
-# Initialize OpenAI client using the secure API key from environment variables
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    print("WARNING: OpenAI API key not found in environment variables!")
+# Initialize Qwen client using the OpenAI-compatible API
+# Supports Alibaba Cloud DashScope, OpenRouter, Groq, or any OpenAI-compatible provider
+QWEN_API_KEY = os.getenv("QWEN_API_KEY") or os.getenv("DASHSCOPE_API_KEY") or os.getenv("OPENAI_API_KEY")
+QWEN_BASE_URL = os.getenv("QWEN_BASE_URL", "https://dashscope-intl.aliyuncs.com/compatible-mode/v1")
+QWEN_MODEL = os.getenv("QWEN_MODEL", "qwen-plus")
 
-client = OpenAI(api_key=api_key) if api_key else None
+if not QWEN_API_KEY:
+    print("WARNING: Qwen API key (QWEN_API_KEY / DASHSCOPE_API_KEY) not found in environment variables!")
 
-app = FastAPI(title="Transcription & AI Study Assistant API")
+client = OpenAI(api_key=QWEN_API_KEY, base_url=QWEN_BASE_URL) if QWEN_API_KEY else None
+
+app = FastAPI(title="Transcription & AI Study Assistant API (Qwen-Powered)")
 
 # Enable CORS for frontend communication
 app.add_middleware(
@@ -60,7 +64,8 @@ async def root():
     return {
         "status": "ok",
         "message": "Transcription & AI Study Assistant API is running",
-        "model": WHISPER_MODEL_NAME
+        "transcription_model": f"whisper-{WHISPER_MODEL_NAME}",
+        "llm_model": QWEN_MODEL
     }
 
 @app.get("/health")
@@ -105,7 +110,7 @@ async def summarize_text(data: SummaryRequest):
         if not client:
             return JSONResponse(
                 status_code=500,
-                content={"error": "OPENAI_API_KEY is not configured on the server. Please set it in Railway environment variables."}
+                content={"error": "Qwen API key is not configured on the server. Please set QWEN_API_KEY (or DASHSCOPE_API_KEY / OPENAI_API_KEY) in Railway environment variables."}
             )
 
         # Validate the request data
@@ -117,7 +122,7 @@ async def summarize_text(data: SummaryRequest):
             )
             
         # Check if text is too large
-        if len(data.text) > 100000:  # GPT-4 has a context limit
+        if len(data.text) > 100000:
             print(f"Error: Text too large ({len(data.text)} chars)")
             return JSONResponse(
                 status_code=413,
@@ -141,9 +146,9 @@ async def summarize_text(data: SummaryRequest):
         messages.append({"role": "user", "content": data.text})
 
         response = client.chat.completions.create(
-            model="gpt-4",
+            model=QWEN_MODEL,
             messages=messages,
-            max_tokens=500
+            max_tokens=800
         )
 
         summary = response.choices[0].message.content.strip()
@@ -173,7 +178,7 @@ async def generate_quiz(data: QuizRequest):
         if not client:
             return JSONResponse(
                 status_code=500,
-                content={"error": "OPENAI_API_KEY is not configured on the server. Please set it in Railway environment variables."}
+                content={"error": "Qwen API key is not configured on the server. Please set QWEN_API_KEY (or DASHSCOPE_API_KEY / OPENAI_API_KEY) in Railway environment variables."}
             )
 
         # Validate the request data
@@ -185,7 +190,7 @@ async def generate_quiz(data: QuizRequest):
             )
             
         # Check if text is too large
-        if len(data.text) > 100000:  # GPT-4 has a context limit
+        if len(data.text) > 100000:
             print(f"Error: Text too large ({len(data.text)} chars)")
             return JSONResponse(
                 status_code=413,
@@ -212,12 +217,12 @@ async def generate_quiz(data: QuizRequest):
         """
         
         response = client.chat.completions.create(
-            model="gpt-4",
+            model=QWEN_MODEL,
             messages=[
                 {"role": "system", "content": prompt},
                 {"role": "user", "content": data.text}
             ],
-            max_tokens=1000
+            max_tokens=1500
         )
 
         quiz = response.choices[0].message.content.strip()
